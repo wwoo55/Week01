@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>task05-update</title>
+    <script th:src="@{/js/jquery-3.3.1.js}"></script>
+    <script th:src="@{/js/getLoginStatus.js}"></script>
+    <script th:src="@{/js/getParameter.js}"></script>
+    <script>
+        /* 渲染表单 */
+        $(function () {
+            let id = getParameter("id");
+            $.get("/consumer?id=" + id, function (e) {
+                if (e) {
+                    $("#id").attr("value", e.id);
+                    $("#input-name").attr("value", e.name);
+                    $("#input-password").attr("value", e.password);
+                    $("#input-email").attr("value", e.email);
+                }
+            }, "json");
+        });
+        /* 省市数据 */
+        $(function () {
+            $.get("/province", function (e) {
+                if (e) {
+                    let temp = '';
+                    for (let i = 0; i < e.length; i++) {
+                        temp += '<option value="' + e[i].pid + '">' + e[i].name + '</option>';
+                    }
+                    $("#province-select").html(temp)
+                }
+            }, "json");
+
+            $("#province-select").change(function () {
+                $.get("/city?pid=" + $(this).val(), function (e) {
+                    if (e) {
+                        let temp = '';
+                        for (let i = 0; i < e.length; i++) {
+                            temp += '<option value="' + e[i].cid + '">' + e[i].name + '</option>';
+                        }
+                        $("#city-select").html(temp)
+                    }
+                }, "json");
+            });
+        });
+        /* 表单的校验及提交 */
+        $(function () {
+            $("#register-form").submit(function () {
+                $.ajax({
+                    url: "/consumer",
+                    type: "put",
+                    dataType: "json",
+                    data: $(this).serialize(),
+                    success: function (e) {
+                        if (e) {
+                            alert("更新成功");
+                            window.location.href = "/page/task05";
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+</head>
+<body>
+<div>
+    <form id="register-form" action="#">
+        <div>
+            <input id="id" type="hidden" name="id" value="0">
+        </div>
+        <div>
+            <label for="input-name">用户名：</label>
+            <input id="input-name" type="text" name="name">
+        </div>
+        <div>
+            <label for="input-password">密码：</label>
+            <input id="input-password" type="text" name="password">
+        </div>
+        <div>
+            <label for="input-email">邮箱：</label>
+            <input id="input-email" type="email" name="email">
+        </div>
+        <div>
+            <label>省：</label>
+            <select id="province-select" name="provinceId">
+                <option>选择</option>
+            </select>
+            <br>
+            <label>市：</label>
+            <select id="city-select" name="cityId">
+                <option value="110100">市辖区</option>
+                <option value="110200">县</option>
+            </select>
+        </div>
+        <div>
+            <label>爱好：</label>
+            <input name="hobby" type="checkbox" value="唱歌" class="hobby-checkbox">唱歌
+            <input name="hobby" type="checkbox" value="跳舞" class="hobby-checkbox">跳舞
+            <input name="hobby" type="checkbox" value="打篮球" class="hobby-checkbox">打篮球
+            <input name="hobby" type="checkbox" value="看书" class="hobby-checkbox">看书
+        </div>
+        <div>
+            <input type="submit" value="提交">
+        </div>
+    </form>
+    <a href="/page/index">回到index</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>task01</title>
+    <script th:src="@{/js/jquery-3.3.1.js}"></script>
+    <script th:src="@{/js/getLoginStatus.js}"></script>
+    <script>
+        /* 省市数据 */
+        $(function () {
+            $.get("/province", function (e) {
+                if (e) {
+                    let temp = '';
+                    for (let i = 0; i < e.length; i++) {
+                        temp += '<option value="' + e[i].pid + '">' + e[i].name + '</option>';
+                    }
+                    $("#province-select").html(temp)
+                }
+            }, "json");
+
+            $("#province-select").change(function () {
+                $.get("/city?pid=" + $(this).val(), function (e) {
+                    if (e) {
+                        let temp = '';
+                        for (let i = 0; i < e.length; i++) {
+                            temp += '<option value="' + e[i].cid + '">' + e[i].name + '</option>';
+                        }
+                        $("#city-select").html(temp)
+                    }
+                }, "json");
+            });
+        });
+        /* 表单的校验及提交 */
+        $(function () {
+            // 标记
+            let nameFlag = false;
+            let pwdFlag = false;
+            let checkboxFlag = false;
+
+            // 为表单元素添加失去焦点事件
+            $("form :input").blur(function () {
+                let parent = $(this).parent();
+                parent.find(".msg").remove(); // 删除以前的提醒元素（find()：查找匹配元素集中元素的所有匹配元素）
+                // 验证用户名
+                if ($(this).is("#input-name")) {
+                    let nameVal = $.trim(this.value);
+                    let regName = /^[A-Za-z0-9]+$/;
+                    if (nameVal !== "" && regName.test(nameVal)) {
+                        let okMsg = " 输入正确";
+                        parent.append("<span class='msg onSuccess'>" + okMsg + "</span>");
+                        nameFlag = true;
+                    } else {
+                        let errorMsg = " 输入错误，只能输入字母和数字 ";
+                        parent.append("<span class='msg onError'>" + errorMsg + "</span>");
+                        nameFlag = false;
+                    }
+                }
+                // 验证密码
+                if ($(this).is("#input-password")) {
+                    let passwordVal = $.trim(this.value);
+                    let regPassword = /^(?=.*[0-9].*)(?=.*[A-Z].*)(?=.*[a-z].*).{9,}$/
+                    if (passwordVal !== "" && passwordVal.length > 8 && regPassword.test(passwordVal)) {
+                        let okMsg = " 输入正确";
+                        parent.append("<span class='msg onSuccess'>" + okMsg + "</span>");
+                        pwdFlag = true;
+                    } else {
+                        let errorMsg = " 输入错误，大于8位且必须包含大小写字母和数字 ";
+                        parent.append("<span class='msg onError'>" + errorMsg + "</span>");
+                        pwdFlag = false;
+                    }
+                }
+                // 验证多选框
+                if ($(this).is(".hobby-checkbox")) {
+                    if ($("input:checkbox:checked").length < 2) {
+                        let errorMsg = " 至少选择两个爱好 ";
+                        parent.append("<span class='msg onError'>" + errorMsg + "</span>");
+                        checkboxFlag = false;
+                    } else {
+                        checkboxFlag = true;
+                    }
+                }
+            });
+
+            $("#register-form").submit(function () {
+                if (nameFlag && pwdFlag && checkboxFlag) {
+                    // 验证成功，可以提交
+                    $.post("/consumer", $(this).serialize(), function (e) {
+                        if (e) {
+                            alert("提交成功");
+                        }
+                    }, "json");
+                } else {
+                    alert("请按照要求填好数据！");
+                }
+                return false;
+            });
+        });
+    </script>
+</head>
+<body>
+<div>
+    <form id="register-form" action="#">
+        <div>
+            <label for="input-name">用户名：</label>
+            <input id="input-name" type="text" name="name">
+        </div>
+        <div>
+            <label for="input-password">密码：</label>
+            <input id="input-password" type="password" name="password">
+        </div>
+        <div>
+            <label for="input-email">邮箱：</label>
+            <input id="input-email" type="email" name="email">
+        </div>
+        <div>
+            <label>省：</label>
+            <select id="province-select" name="provinceId">
+                <option>选择</option>
+            </select>
+            <br>
+            <label>市：</label>
+            <select id="city-select" name="cityId">
+                <option value="110100">市辖区</option>
+                <option value="110200">县</option>
+            </select>
+        </div>
+        <div>
+            <label>爱好：</label>
+            <input name="hobby" type="checkbox" value="唱歌" class="hobby-checkbox">唱歌
+            <input name="hobby" type="checkbox" value="跳舞" class="hobby-checkbox">跳舞
+            <input name="hobby" type="checkbox" value="打篮球" class="hobby-checkbox">打篮球
+            <input name="hobby" type="checkbox" value="看书" class="hobby-checkbox">看书
+        </div>
+        <div>
+            <input type="submit" value="提交">
+        </div>
+    </form>
+    <div>
+        <span>可连续添加</span>
+        <a href="/page/index">回到index</a>
+    </div>
+
+</div>
+</body>
+</html>

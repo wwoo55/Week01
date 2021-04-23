@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="priv.xy.week01.mapper.IProvinceMapper">
+    <select id="selectAll" resultType="Province">
+        select *
+        from provinces
+    </select>
+    <select id="selectByPid" resultType="priv.xy.week01.domain.Province">
+        select *
+        from provinces
+        where pid = #{pid}
+    </select>
+</mapper>
