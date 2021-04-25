@@ -32,10 +32,20 @@ public class RedirectController {
     public String userManage(){
         return "user-manage";
     }
+    @RequestMapping("/page/role-manage")
+    public String roleManage(){
+        return "role-manage";
+    }
+    @RequestMapping("/page/permission-manage")
+    public String permissionManage(){
+        return "permission-manage";
+    }
 
     @RequestMapping("/page/user-manage-update")
     public String userManageUpdate(){
         return "user-manage-update";
     }
+
+
 
 }

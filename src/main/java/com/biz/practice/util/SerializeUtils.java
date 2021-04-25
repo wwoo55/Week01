@@ -22,8 +22,7 @@ public class SerializeUtils {
             baos = new ByteArrayOutputStream();
             oos = new ObjectOutputStream(baos);
             oos.writeObject(object);
-            byte[] bytes = baos.toByteArray();
-            return bytes;
+            return baos.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
