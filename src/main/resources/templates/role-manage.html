@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>role-manager</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script th:src="@{/js/jquery-3.3.1.js}"></script>
+    <script th:src="@{/js/getLoginStatus.js}"></script>
+    <script th:src="@{/layui/layui.js}"></script>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="update">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">禁用</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="log">按钮权限</a>
+    </script>
+    <script th:inline="none">
+        layui.use('table', function () {
+            var table = layui.table;
+            table.render({
+                elem: '#demo'
+                , url: '/consumer/listConsumer'
+                /*,toolbar: '#toolbarDemo'*/
+                , cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+                , page: true //开启分页
+                , limit: 5
+                , limits: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                , id: 'demo'
+                , cols: [[
+                    {field: 'id', title: 'id'}
+                    , {field: 'name', title: '用户名'}
+                    , {field: 'email', title: '邮箱'}
+                    , {field: 'address', title: '地区'}
+                    , {field: 'gmtCreateStr', title: '创建时间'}
+                    , {fixed: 'right', title: '操作', toolbar: '#barDemo'}
+                ]]
+            });
+
+            // $("#search-input").val()!==''?($("#search-input").val()):temp
+            var $ = layui.$, active = {
+                reload: function () {
+                    var demoReload = $('#demoReload');
+                    //执行重载
+                    table.reload('demo', {
+                        where: { //设定异步数据接口的额外参数，任意设
+                            key: $("#demoReload").val()
+                        }
+                        , page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+                }
+            };
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                // console.log(obj)
+
+                // 更新
+                if (obj.event === 'update') {
+                    window.location.href = "/page/user-manage-update?id=" + data.id;
+                }
+
+                // 删除操作
+                if (obj.event === 'delete') {
+                    layer.confirm('<i class="layui-icon layui-icon-face-cry" style="font-size: 30px;"></i>真的要删除么', function (index) {
+                        obj.del();
+                        // layer.close(index);
+                        $.ajax({
+                            url: "/consumer",
+                            type: "delete",
+                            dataType: "json",
+                            data: {"id": data.id},
+                            success: function (e) {
+                                if (e) {
+                                    alert("删除成功");
+                                }
+                            }
+                        });
+                    });
+                }
+                // 管理职位
+                if (obj.event === 'log') {
+                    $.get("/log/login?name=" + data.name, function (e) {
+                        if (e.flag) {
+                            let temp = '';
+                            for (let i = 0; i < e.data.length; i++) {
+                                temp += '<span>' + e.data[i] + '</span><br>';
+                            }
+                            $("#log-div").html(temp);
+                        } else {
+                            $("#log-div").html(e.msg);
+                        }
+                    }, "json");
+                }
+
+                // 登录日志
+                if (obj.event === 'job') {
+                    alert("还没写");
+                }
+            });
+
+            // 搜索点击事件
+            $('.demoTable .layui-btn').on('click', function () {
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            });
+        });
+    </script>
+    <script>
+        !function () {
+            //无需再执行layui.use()方法加载模块，直接使用即可
+            var form = layui.form
+                , layer = layui.layer;
+            //…
+        }();
+    </script>
+</head>
+<body>
+<div>
+    <div class="demoTable">
+        角色名：
+        <div class="layui-inline">
+            <input class="layui-input" name="id" id="demoReload" autocomplete="off">
+        </div>
+        <button class="layui-btn" data-type="reload">搜索</button>
+    </div>
+    <div>
+        <!--list-->
+        <table id="demo" lay-filter="test"></table>
+    </div>
+    <div>
+        <a href="/page/index">回到index</a>
+    </div>
+</div>
+</body>
+</html>
