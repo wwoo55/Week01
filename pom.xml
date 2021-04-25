@@ -99,7 +99,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.3.7.RELEASE</version>
                 <configuration>
-                    <mainClass>priv.xy.week01.Week01Application</mainClass>
+                    <mainClass>com.biz.practice.PracticeApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
