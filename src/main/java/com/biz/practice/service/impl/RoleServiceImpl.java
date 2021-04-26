@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class RoleServiceImpl implements IRoleService {
 
-    @Autowired
+    @Autowired(required = false)
     private IRoleDao roleDao;
 
     @Override

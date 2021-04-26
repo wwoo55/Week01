@@ -40,12 +40,9 @@ public class RedirectController {
     public String permissionManage(){
         return "permission-manage";
     }
-
     @RequestMapping("/page/user-manage-update")
     public String userManageUpdate(){
         return "user-manage-update";
     }
-
-
 
 }

@@ -29,15 +29,16 @@ public class RoleController {
 
     /**
      * 返回 角色list
-     * @param key 角色名
-     * @param page 页数
+     *
+     * @param key   角色名
+     * @param page  页数
      * @param limit 每页几条
      * @return
      */
     @GetMapping("/listRole")
     public PageResponseDTO<RoleDTO> listRole(@RequestParam(name = "key", required = false) String key,
                                              @RequestParam(name = "page", required = false) Integer page,
-                                             @RequestParam(name = "limit", required = false) Integer limit){
+                                             @RequestParam(name = "limit", required = false) Integer limit) {
         if (StringUtils.isEmpty(key)) {
             key = "";
         }
@@ -49,17 +50,34 @@ public class RoleController {
             // 默认一页条数
             limit = 3;
         }
-        return this.roleService.listRole(key,page,limit);
+        return this.roleService.listRole(key, page, limit);
+    }
+
+    /**
+     * 插入角色
+     *
+     * @param roleVo
+     * @return
+     */
+    @PostMapping("/common")
+    public ResultInfoDTO insertRole(RoleVo roleVo) {
+        ResultInfoDTO infoDTO = new ResultInfoDTO();
+        int resultNum = this.roleService.insertRole(roleVo);
+        infoDTO.setFlag(resultNum == 1);
+        return infoDTO;
     }
 
     /**
      * 编辑角色
+     *
+     * @param role
+     * @return
      */
     @PutMapping("/common")
-    public ResultInfoDTO updateRole(Role role){
+    public ResultInfoDTO updateRole(Role role) {
         ResultInfoDTO infoDTO = new ResultInfoDTO();
         int resultNum = this.roleService.updateRole(role);
-        infoDTO.setFlag(resultNum==1);
+        infoDTO.setFlag(resultNum == 1);
         return infoDTO;
     }
 
@@ -67,18 +85,10 @@ public class RoleController {
      * 禁用指定id角色
      */
     @PutMapping("/ban/{id}")
-    public ResultInfoDTO banRole(@PathVariable(name = "id") Long id){
+    public ResultInfoDTO banRole(@PathVariable(name = "id") Long id) {
         ResultInfoDTO infoDTO = new ResultInfoDTO();
         int resultNum = this.roleService.banRole(id);
-        infoDTO.setFlag(resultNum==1);
-        return infoDTO;
-    }
-
-    @PostMapping("/common")
-    public ResultInfoDTO insertRole(RoleVo roleVo){
-        ResultInfoDTO infoDTO = new ResultInfoDTO();
-        int resultNum = this.roleService.insertRole(roleVo);
-        infoDTO.setFlag(resultNum==1);
+        infoDTO.setFlag(resultNum == 1);
         return infoDTO;
     }
 }
