@@ -9,32 +9,32 @@
     <script th:src="@{/layui/layui.js}"></script>
     <script type="text/html" id="barDemo">
         <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="update">编辑</a>
-        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">禁用</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="ban">禁用</a>
         <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="log">按钮权限</a>
     </script>
+
     <script th:inline="none">
         layui.use('table', function () {
             var table = layui.table;
             table.render({
                 elem: '#demo'
-                , url: '/consumer/listConsumer'
+                , url: '/role/listRole'
                 /*,toolbar: '#toolbarDemo'*/
                 , cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
                 , page: true //开启分页
-                , limit: 5
-                , limits: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                , limit: 3
+                , limits: [2, 3, 4, 5]
                 , id: 'demo'
                 , cols: [[
                     {field: 'id', title: 'id'}
-                    , {field: 'name', title: '用户名'}
-                    , {field: 'email', title: '邮箱'}
-                    , {field: 'address', title: '地区'}
-                    , {field: 'gmtCreateStr', title: '创建时间'}
+                    , {field: 'encode', title: '角色编码'}
+                    , {field: 'name', title: '角色名称'}
+                    , {field: 'statusStr', title: '状态'}
                     , {fixed: 'right', title: '操作', toolbar: '#barDemo'}
                 ]]
             });
 
-            // $("#search-input").val()!==''?($("#search-input").val()):temp
+            // 表格重载
             var $ = layui.$, active = {
                 reload: function () {
                     var demoReload = $('#demoReload');
@@ -53,56 +53,88 @@
             //监听行工具事件
             table.on('tool(test)', function (obj) {
                 var data = obj.data;
-                // console.log(obj)
 
                 // 更新
                 if (obj.event === 'update') {
-                    window.location.href = "/page/user-manage-update?id=" + data.id;
-                }
-
-                // 删除操作
-                if (obj.event === 'delete') {
-                    layer.confirm('<i class="layui-icon layui-icon-face-cry" style="font-size: 30px;"></i>真的要删除么', function (index) {
-                        obj.del();
-                        // layer.close(index);
-                        $.ajax({
-                            url: "/consumer",
-                            type: "delete",
-                            dataType: "json",
-                            data: {"id": data.id},
-                            success: function (e) {
-                                if (e) {
-                                    alert("删除成功");
+                    $("#id-update-inform").val(data.id);
+                    $("#encode-update-input").val(data.encode);
+                    $("#name-update-input").val(data.name);
+                    layer.open({
+                        type: 1,
+                        area: ['300px', '250px'],
+                        title: '编辑'
+                        , content: $("#update-form"),
+                        shade: 0,
+                        btn: ['提交']
+                        , btn1: function (index, layero) {
+                            $.ajax({
+                                url:"/role/common",
+                                type:"put",
+                                dataType: "json",
+                                data:$("#update-form").serialize(),
+                                success:function (e){
+                                    if (e.flag){
+                                        layer.closeAll();
+                                        window.location.href = "/page/role-manage";
+                                    }
                                 }
-                            }
-                        });
+                            })
+                        },
+                        cancel: function (layero, index) {
+                            layer.closeAll();
+                        }
                     });
                 }
-                // 管理职位
-                if (obj.event === 'log') {
-                    $.get("/log/login?name=" + data.name, function (e) {
-                        if (e.flag) {
-                            let temp = '';
-                            for (let i = 0; i < e.data.length; i++) {
-                                temp += '<span>' + e.data[i] + '</span><br>';
+
+                // 禁用操作
+                if (obj.event === 'ban') {
+                    $.ajax({
+                        url:"/role/ban/"+data.id,
+                        type:"put",
+                        dataType: "json",
+                        success:function (e){
+                            if (e.flag){
+                                window.location.href = "/page/role-manage";
                             }
-                            $("#log-div").html(temp);
-                        } else {
-                            $("#log-div").html(e.msg);
                         }
-                    }, "json");
+                    });
                 }
 
-                // 登录日志
-                if (obj.event === 'job') {
-                    alert("还没写");
-                }
             });
 
             // 搜索点击事件
             $('.demoTable .layui-btn').on('click', function () {
                 var type = $(this).data('type');
                 active[type] ? active[type].call(this) : '';
+            });
+
+            // 添加新角色事件
+            $("#insert-button").click(function (){
+                layer.open({
+                    type: 1,
+                    area: ['300px', '250px'],
+                    title: '编辑'
+                    , content: $("#insert-form"),
+                    shade: 0,
+                    btn: ['提交']
+                    , btn1: function (index, layero) {
+                        $.ajax({
+                            url:"/role/common",
+                            type:"post",
+                            dataType: "json",
+                            data:$("#insert-form").serialize(),
+                            success:function (e){
+                                if (e.flag){
+                                    layer.closeAll();
+                                    window.location.href = "/page/role-manage";
+                                }
+                            }
+                        })
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+                });
             });
         });
     </script>
@@ -123,6 +155,7 @@
             <input class="layui-input" name="id" id="demoReload" autocomplete="off">
         </div>
         <button class="layui-btn" data-type="reload">搜索</button>
+        <button class="layui-btn" data-type="reload" id="insert-button">新增</button>
     </div>
     <div>
         <!--list-->
@@ -132,5 +165,44 @@
         <a href="/page/index">回到index</a>
     </div>
 </div>
+<!-- 角色更新表单 -->
+<form class="layui-form" id="update-form" style="display:none">
+    <div>
+        <input type="hidden" name="id" id="id-update-inform">
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色编码</label>
+        <div class="layui-input-block">
+            <input type="text" name="encode" class="layui-input" id="encode-update-input" >
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" class="layui-input" id="name-update-input">
+        </div>
+    </div>
+</form>
+<!-- 角色添加表单 -->
+<form class="layui-form" id="insert-form" style="display:none">
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色编码</label>
+        <div class="layui-input-block">
+            <input type="text" name="encode" class="layui-input" id="encode-insert-input" >
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" class="layui-input" id="name-insert-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否启用</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="statusHas" title="启用">
+        </div>
+    </div>
+</form>
 </body>
 </html>

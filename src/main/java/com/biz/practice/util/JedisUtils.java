@@ -64,4 +64,12 @@ public class JedisUtils {
     public static byte[] readConsumer(Long id){
         return jedis.get((id + "").getBytes());
     }
+
+    /**
+     * 删除指定id的consumer
+     * @param id
+     */
+    public static void deleteConsumer(Long id){
+        jedis.del((id+"").getBytes());
+    }
 }

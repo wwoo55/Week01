@@ -60,7 +60,7 @@ public class ConsumerController {
 
     /**
      * 根据id返回对象
-     *
+     * redis
      * @param id
      * @return
      */

@@ -43,7 +43,7 @@ public class ConsumerServiceImpl implements IConsumerService {
     private ICityDao iCityDao;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean insertConsumer(ConsumerVO consumerVo) {
 
         Consumer consumer = new Consumer();
@@ -85,7 +85,14 @@ public class ConsumerServiceImpl implements IConsumerService {
         PageHelper.startPage(page, limit);
         List<Consumer> list = this.iConsumerDao.selectByKey(key);
 
-        // BeanUtil 时间格式转换 封装DTO
+        // 当无数据时
+        if (CollectionUtils.isEmpty(list)) {
+            // code:1 表示失败
+            responseDTO.setCode(1);
+            responseDTO.setMsg("抱歉没有找到与之相关的用户");
+            return responseDTO;
+        }
+        // BeanUtil consumer->consumerDTO
         List<ConsumerDTO> collect = list.stream().map(item -> {
             ConsumerDTO dto = new ConsumerDTO();
             BeanUtils.copyProperties(item, dto);
@@ -96,13 +103,6 @@ public class ConsumerServiceImpl implements IConsumerService {
 
         PageInfo<Consumer> pageInfo = new PageInfo<>(list);
         PageInfo<ConsumerDTO> consumerPageInfo = new PageInfo<>(collect);
-
-        // 当无数据时
-        if (CollectionUtils.isEmpty(list)) {
-            // code:1 表示失败
-            responseDTO.setCode(1);
-            responseDTO.setMsg("抱歉没有找到与之相关的用户");
-        }
         responseDTO.setCode(0);
         responseDTO.setCount((int) pageInfo.getTotal());
         responseDTO.setData(consumerPageInfo.getList());
@@ -110,10 +110,14 @@ public class ConsumerServiceImpl implements IConsumerService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteConsumer(Long id) {
-        int i = this.iConsumerDao.delete(id);
-        return i == 1;
+        int resultNum = this.iConsumerDao.delete(id);
+        if (resultNum==1){
+            // 在redis中删除
+            JedisUtils.deleteConsumer(id);
+        }
+        return resultNum == 1;
     }
 
     @Override
@@ -131,7 +135,7 @@ public class ConsumerServiceImpl implements IConsumerService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateConsumer(ConsumerVO consumerVo) {
         Consumer consumer = new Consumer();
         consumer.setId(consumerVo.getId());
@@ -153,9 +157,10 @@ public class ConsumerServiceImpl implements IConsumerService {
         }
         // 时间
         consumer.setGmtModified(new Date());
-        System.out.println(consumer);
-
         int result = this.iConsumerDao.update(consumer);
+
+        // 在redis中更新
+        JedisUtils.writeConsumer(consumer);
         return result == 1;
     }
 }
