@@ -10,9 +10,29 @@
     <script type="text/html" id="barDemo">
         <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="update">编辑</a>
         <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="ban">禁用</a>
-        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="log">按钮权限</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="permission">按钮权限</a>
     </script>
 
+    <script>
+        /*渲染页面*/
+        /*$(function () {
+            $.ajax({
+                url: '/permission/listPermission/all',
+                type: "get",
+                dataType: "json",
+                success: function (e) {
+                    if (e.flag) {
+                        e = e.data;
+                        let temp = '';
+                        for (let i = 0; i < e.length; i++) {
+                            temp += '<input id="pid' + e[i].id + '" type="checkbox" name="permission" value="' + e[i].id + '" title="' + e[i].name + '">' + e[i].name + '<br>';
+                        }
+                        $("#checkbox-div").html(temp);
+                    }
+                }
+            });
+        });*/
+    </script>
     <script th:inline="none">
         layui.use('table', function () {
             var table = layui.table;
@@ -68,12 +88,12 @@
                         btn: ['提交']
                         , btn1: function (index, layero) {
                             $.ajax({
-                                url:"/role/common",
-                                type:"put",
+                                url: "/role/common",
+                                type: "put",
                                 dataType: "json",
-                                data:$("#update-form").serialize(),
-                                success:function (e){
-                                    if (e.flag){
+                                data: $("#update-form").serialize(),
+                                success: function (e) {
+                                    if (e.flag) {
                                         layer.closeAll();
                                         window.location.href = "/page/role-manage";
                                     }
@@ -89,54 +109,108 @@
                 // 禁用操作
                 if (obj.event === 'ban') {
                     $.ajax({
-                        url:"/role/ban/"+data.id,
-                        type:"put",
+                        url: "/role/ban/" + data.id,
+                        type: "put",
                         dataType: "json",
-                        success:function (e){
-                            if (e.flag){
+                        success: function (e) {
+                            if (e.flag) {
                                 window.location.href = "/page/role-manage";
                             }
                         }
                     });
                 }
 
-            });
-
-            // 搜索点击事件
-            $('.demoTable .layui-btn').on('click', function () {
-                var type = $(this).data('type');
-                active[type] ? active[type].call(this) : '';
-            });
-
-            // 添加新角色事件
-            $("#insert-button").click(function (){
-                layer.open({
-                    type: 1,
-                    area: ['300px', '250px'],
-                    title: '编辑'
-                    , content: $("#insert-form"),
-                    shade: 0,
-                    btn: ['提交']
-                    , btn1: function (index, layero) {
-                        $.ajax({
-                            url:"/role/common",
-                            type:"post",
-                            dataType: "json",
-                            data:$("#insert-form").serialize(),
-                            success:function (e){
-                                if (e.flag){
-                                    layer.closeAll();
-                                    window.location.href = "/page/role-manage";
-                                }
+                // 权限操作
+                if (obj.event === 'permission') {
+                    // 1.渲染数据到页面
+                    // 角色id
+                    $("#id-role-permission-update-input").val(data.id);
+                    // 哪些框被选中 checked
+                    $.get("/rolePermission/list", {"rid": data.id}, function (e) {
+                        if (e.flag) {
+                            e = e.data;
+                            // 得到数据，开始渲染
+                            for (let i = 0; i < e.length; i++) {
+                                let pid = '#pid-' + e[i].id;
+                                $(pid).prop("checked", true);
                             }
-                        })
-                    },
-                    cancel: function (layero, index) {
-                        layer.closeAll();
-                    }
-                });
+                            alert($("#update-role-permission-form").serialize())
+                        }
+                        // 2.用户操作，实现更新数据
+                        layer.open({
+                            type: 1,
+                            area: ['300px', '250px'],
+                            title: data.name,
+                            content: $("#update-role-permission-form"),
+                            shade: 0,
+                            btn: ['取消', '提交'],
+                            btn1: function (index, layero) {
+                                // 清掉渲染
+
+                                layer.closeAll();
+                                window.location.href = "/page/role-manage";
+
+                            }
+                            , btn2: function (index, layero) {
+                                $.ajax({
+                                    url: "/rolePermission/common",
+                                    type: "put",
+                                    dataType: "json",
+                                    data: $("#update-role-permission-form").serialize(),
+                                    success: function (e) {
+                                        if (e.flag) {
+                                            // 清掉渲染
+                                            layer.closeAll();
+                                            window.location.href = "/page/role-manage";
+                                        }
+                                    }
+                                })
+                            }
+                        });
+
+                    }, "json");
+
+                }
+            })
+
+
+        });
+
+        // 搜索点击事件
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        // 添加新角色事件
+        $("#insert-button").click(function () {
+            layer.open({
+                type: 1,
+                area: ['300px', '250px'],
+                title: '编辑'
+                , content: $("#insert-form"),
+                shade: 0,
+                btn: ['提交']
+                , btn1: function (index, layero) {
+                    $.ajax({
+                        url: "/role/common",
+                        type: "post",
+                        dataType: "json",
+                        data: $("#insert-form").serialize(),
+                        success: function (e) {
+                            if (e.flag) {
+                                layer.closeAll();
+                                window.location.href = "/page/role-manage";
+                            }
+                        }
+                    })
+                },
+                cancel: function (layero, index) {
+                    layer.closeAll();
+                }
             });
         });
+
     </script>
     <script>
         !function () {
@@ -173,7 +247,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">角色编码</label>
         <div class="layui-input-block">
-            <input type="text" name="encode" class="layui-input" id="encode-update-input" >
+            <input type="text" name="encode" class="layui-input" id="encode-update-input">
         </div>
     </div>
     <div class="layui-form-item">
@@ -188,7 +262,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">角色编码</label>
         <div class="layui-input-block">
-            <input type="text" name="encode" class="layui-input" id="encode-insert-input" >
+            <input type="text" name="encode" class="layui-input" id="encode-insert-input">
         </div>
     </div>
     <div class="layui-form-item">
@@ -201,6 +275,19 @@
         <label class="layui-form-label">是否启用</label>
         <div class="layui-input-block">
             <input type="checkbox" name="statusHas" title="启用">
+        </div>
+    </div>
+</form>
+<!-- 角色权限更新 -->
+<form class="layui-form" id="update-role-permission-form" style="display: none">
+    <input type="hidden" name="roleId" id="id-role-permission-update-input">
+    <div class="layui-form-item">
+        <div class="layui-input-block" id="checkbox-div">
+            <!-- id 为"pid-" 加上权限id        value 直接为权限id -->
+            <input id="pid-1000" type="checkbox" name="permissionId" value="1000" title="添加用户">
+            <input id="pid-1001" type="checkbox" name="permissionId" value="1001" title="删除用户">
+            <input id="pid-1002" type="checkbox" name="permissionId" value="1002" title="更新用户">
+            <input id="pid-1003" type="checkbox" name="permissionId" value="1003" title="查询用户">
         </div>
     </div>
 </form>

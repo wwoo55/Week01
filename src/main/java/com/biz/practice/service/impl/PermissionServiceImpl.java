@@ -62,4 +62,9 @@ public class PermissionServiceImpl implements IPermissionService {
     public int updatePermission(Permission permission) {
         return this.permissionDao.updateByPrimaryKeySelective(permission);
     }
+
+    @Override
+    public List<Permission> listPermissionAll() {
+        return this.permissionDao.selectAll();
+    }
 }

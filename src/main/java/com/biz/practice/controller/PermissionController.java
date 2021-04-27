@@ -8,8 +8,11 @@ import com.biz.practice.pojo.RoleDTO;
 import com.biz.practice.pojo.RoleVo;
 import com.biz.practice.service.IPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @projectName: Week01
@@ -50,6 +53,22 @@ public class PermissionController {
         return this.permissionService.listPermission(key,page,limit);
     }
 
+    /**
+     * 返回所有权限
+     * @return
+     */
+    @GetMapping("/listPermission/all")
+    public ResultInfoDTO listPermissionAll(){
+        ResultInfoDTO infoDTO = new ResultInfoDTO();
+        List<Permission> list = this.permissionService.listPermissionAll();
+        if (CollectionUtils.isEmpty(list)){
+            infoDTO.setFlag(false);
+            return infoDTO;
+        }
+        infoDTO.setFlag(true);
+        infoDTO.setData(list);
+        return infoDTO;
+    }
     /**
      * 插入新权限
      * @param permission
